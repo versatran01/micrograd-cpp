@@ -17,7 +17,7 @@ class Value {
 
   // Constructors
   Value() = default;
-  explicit Value(DataType d) { impl_->data = d; }
+  Value(DataType d) { impl_->data = d; }
 
   // Accesser
   DataType Data() const { return impl_->data; }
@@ -27,13 +27,7 @@ class Value {
   const DataType* ptr() const { return &impl_->data; }
 
   // Operators
-  Value operator-();
-
-  // Value& operator+=(const Value& rhs);
-  // Value& operator-=(const Value& rhs);
-  // Value& operator*=(const Value& rhs);
-  // Value& operator/=(const Value& rhs);
-
+  friend Value operator-(const Value& rhs);
   friend Value operator+(const Value& lhs, const Value& rhs);
   friend Value operator-(const Value& lhs, const Value& rhs);
   friend Value operator*(const Value& lhs, const Value& rhs);
@@ -45,12 +39,12 @@ class Value {
   friend bool operator!=(const Value& lhs, const Value& rhs) {
     return !(lhs == rhs);
   }
-
   friend bool Eqq(const Value& lhs, const Value& rhs) {
     return lhs.ptr() == rhs.ptr();
   }
 
-  Value ReLU() { return {}; }
+  Value Pow(const DataType& exponent) const;
+  Value ReLU() const;
 
   void Backward();
 

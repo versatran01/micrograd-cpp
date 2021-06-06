@@ -5,27 +5,7 @@
 #include <glog/logging.h>
 
 namespace mg {
-
-Value operator+(const Value& lhs, const Value& rhs) {
-  Value out{lhs.Data() + rhs.Data()};
-  out.impl_->func = [=]() {
-    lhs.impl_->grad += out.Grad();
-    rhs.impl_->grad += out.Grad();
-  };
-  out.children_ = {lhs, rhs};
-  return out;
-}
-
-Value operator*(const Value& lhs, const Value& rhs) {
-  Value out{lhs.Data() * rhs.Data()};
-  out.impl_->func = [=]() {
-    lhs.impl_->grad += rhs.Data() * out.Grad();
-    rhs.impl_->grad += lhs.Data() * out.Grad();
-  };
-  out.children_ = {lhs, rhs};
-  return out;
-}
-
+namespace {
 void BuildTopoImpl(const Value& v,
                    std::vector<Value>& topo,
                    absl::flat_hash_set<const Value::DataType*>& visited) {
@@ -34,9 +14,60 @@ void BuildTopoImpl(const Value& v,
     for (const auto& child : v.children_) {
       BuildTopoImpl(child, topo, visited);
     }
-    LOG(INFO) << "add " << v;
     topo.push_back(v);
   }
+}
+}  // namespace
+
+Value operator-(const Value& rhs) { return rhs * -1.0; }
+
+Value operator+(const Value& lhs, const Value& rhs) {
+  Value out{lhs.Data() + rhs.Data()};
+
+  out.impl_->func = [out, lhs = Value(lhs), rhs = Value(rhs)]() {
+    lhs.impl_->grad += out.Grad();
+    rhs.impl_->grad += out.Grad();
+  };
+  out.children_ = {lhs, rhs};
+  return out;
+}
+
+Value operator-(const Value& lhs, const Value& rhs) { return lhs + (-rhs); }
+
+Value operator*(const Value& lhs, const Value& rhs) {
+  Value out{lhs.Data() * rhs.Data()};
+
+  out.impl_->func = [out, lhs = Value(lhs), rhs = Value(rhs)]() {
+    lhs.impl_->grad += rhs.Data() * out.Grad();
+    rhs.impl_->grad += lhs.Data() * out.Grad();
+  };
+  out.children_ = {lhs, rhs};
+  return out;
+}
+
+Value Value::Pow(const DataType& exponent) const {
+  Value out{std::pow(Data(), exponent)};
+
+  out.impl_->func = [out, exponent, self = *this]() {
+    self.impl_->grad += exponent * out.Data() / self.Data() * out.Grad();
+  };
+  out.children_ = {*this};
+  return out;
+}
+
+Value Value::ReLU() const {
+  bool gt0 = Data() > 0;
+  Value out{gt0 ? Data() : 0};
+
+  out.impl_->func = [=, self = *this]() {
+    self.impl_->grad += gt0 * out.Grad();
+  };
+  out.children_ = {*this};
+  return out;
+}
+
+Value operator/(const Value& lhs, const Value& rhs) {
+  return lhs * rhs.Pow(-1.0);
 }
 
 void Value::Backward() {
@@ -49,7 +80,6 @@ void Value::Backward() {
   Grad_() = 1.0;
 
   for (auto& v : topo) {
-    LOG(INFO) << "backward " << v;
     v.impl_->func();
   }
 }
