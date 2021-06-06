@@ -4,17 +4,11 @@ project(micrograd)
 set(CMAKE_CXX_STANDARD 17)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-include(Cache)
-include(StaticAnalyzers)
-include(CompilerWarnings)
+set(CC_TARGET_PREFIX mg)
+include(CMakeHelpers)
 add_library(mg_options INTERFACE)
 enable_warnings(mg_options)
-
-include(Sanitizers)
 enable_sanitizers(mg_options)
-
-set(CC_TARGET_PREFIX mg)
-include(BazelHelpers)
 
 find_package(fmt REQUIRED)
 find_package(glog REQUIRED)
