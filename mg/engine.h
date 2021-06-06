@@ -7,20 +7,24 @@
 
 namespace mg {
 
+static auto kNoop = []() {};
+
 /// Stores a single scalar value and its gradient
 class Value {
  public:
-  using Data = double;
+  using DataType = double;
   using GradFunc = std::function<void()>;
 
   // Constructors
   Value() = default;
-  explicit Value(Data d) : data_{std::make_shared<Data>(d)} {}
+  explicit Value(DataType d) { impl_->data = d; }
 
   // Accesser
-  Data data() const { return *data_; }
-  Data grad() const { return grad_->data; }
-  const Data* ptr() const { return data_.get(); }
+  DataType Data() const { return impl_->data; }
+  DataType Grad() const { return impl_->grad; }
+  DataType& Data_() { return impl_->data; }
+  DataType& Grad_() { return impl_->grad; }
+  const DataType* ptr() const { return &impl_->data; }
 
   // Operators
   Value operator-();
@@ -36,7 +40,7 @@ class Value {
   friend Value operator/(const Value& lhs, const Value& rhs);
 
   friend bool operator==(const Value& lhs, const Value& rhs) {
-    return lhs.data() == rhs.data();
+    return lhs.Data() == rhs.Data();
   }
   friend bool operator!=(const Value& lhs, const Value& rhs) {
     return !(lhs == rhs);
@@ -53,15 +57,13 @@ class Value {
   std::string Repr() const;
   friend std::ostream& operator<<(std::ostream& os, const Value& v);
 
-  using SharedData = std::shared_ptr<Data>;
-  struct Grad {
-    Data data{};
-    GradFunc func{[]() {}};
+  struct ValueImpl {
+    DataType data{};
+    DataType grad{};
+    GradFunc func{kNoop};
   };
-  using SharedGrad = std::shared_ptr<Grad>;
 
-  SharedData data_{std::make_shared<Data>()};
-  SharedGrad grad_{std::make_shared<Grad>()};
+  std::shared_ptr<ValueImpl> impl_{std::make_shared<ValueImpl>()};
   std::vector<Value> children_;
 };
 

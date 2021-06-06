@@ -7,20 +7,20 @@
 namespace mg {
 
 Value operator+(const Value& lhs, const Value& rhs) {
-  Value out{lhs.data() + rhs.data()};
-  out.grad_->func = [=]() {
-    lhs.grad_->data += out.grad();
-    rhs.grad_->data += out.grad();
+  Value out{lhs.Data() + rhs.Data()};
+  out.impl_->func = [=]() {
+    lhs.impl_->grad += out.Grad();
+    rhs.impl_->grad += out.Grad();
   };
   out.children_ = {lhs, rhs};
   return out;
 }
 
 Value operator*(const Value& lhs, const Value& rhs) {
-  Value out{lhs.data() * rhs.data()};
-  out.grad_->func = [=]() {
-    lhs.grad_->data += rhs.data() * out.grad();
-    rhs.grad_->data += lhs.data() * out.grad();
+  Value out{lhs.Data() * rhs.Data()};
+  out.impl_->func = [=]() {
+    lhs.impl_->grad += rhs.Data() * out.Grad();
+    rhs.impl_->grad += lhs.Data() * out.Grad();
   };
   out.children_ = {lhs, rhs};
   return out;
@@ -28,7 +28,7 @@ Value operator*(const Value& lhs, const Value& rhs) {
 
 void BuildTopoImpl(const Value& v,
                    std::vector<Value>& topo,
-                   absl::flat_hash_set<const Value::Data*>& visited) {
+                   absl::flat_hash_set<const Value::DataType*>& visited) {
   if (!visited.contains(v.ptr())) {
     visited.insert(v.ptr());
     for (const auto& child : v.children_) {
@@ -41,21 +41,21 @@ void BuildTopoImpl(const Value& v,
 
 void Value::Backward() {
   std::vector<Value> topo;
-  absl::flat_hash_set<const Data*> visited;
+  absl::flat_hash_set<const DataType*> visited;
   BuildTopoImpl(*this, topo, visited);
 
   std::reverse(topo.begin(), topo.end());
 
-  grad_->data = 1.0;
+  Grad_() = 1.0;
 
   for (auto& v : topo) {
     LOG(INFO) << "backward " << v;
-    v.grad_->func();
+    v.impl_->func();
   }
 }
 
 std::string Value::Repr() const {
-  return fmt::format("Value(data={}, grad={})", data(), grad());
+  return fmt::format("Value(data={}, grad={})", Data(), Grad());
 }
 
 std::ostream& operator<<(std::ostream& os, const Value& v) {
