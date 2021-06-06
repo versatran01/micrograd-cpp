@@ -15,11 +15,12 @@ class Value {
 
   // Constructors
   Value() = default;
-  Value(Data d) : data_{std::make_shared<Data>(d)} {}
+  explicit Value(Data d) : data_{std::make_shared<Data>(d)} {}
 
   // Accesser
   Data data() const { return *data_; }
-  Data grad() const { return *grad_; }
+  Data grad() const { return grad_->data; }
+  const Data* ptr() const { return data_.get(); }
 
   // Operators
   Value operator-();
@@ -41,16 +42,27 @@ class Value {
     return !(lhs == rhs);
   }
 
-  Value ReLU();
+  friend bool Eqq(const Value& lhs, const Value& rhs) {
+    return lhs.ptr() == rhs.ptr();
+  }
+
+  Value ReLU() { return {}; }
 
   void Backward();
 
   std::string Repr() const;
+  friend std::ostream& operator<<(std::ostream& os, const Value& v);
 
   using SharedData = std::shared_ptr<Data>;
-  SharedData data_{std::make_shared<Data>(0.0)};
-  SharedData grad_{std::make_shared<Data>(0.0)};
-  GradFunc backward_{nullptr};
+  struct Grad {
+    Data data{};
+    GradFunc func{[]() {}};
+  };
+  using SharedGrad = std::shared_ptr<Grad>;
+
+  SharedData data_{std::make_shared<Data>()};
+  SharedGrad grad_{std::make_shared<Grad>()};
+  std::vector<Value> children_;
 };
 
 }  // namespace mg

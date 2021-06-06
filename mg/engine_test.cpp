@@ -5,14 +5,45 @@
 namespace {
 using mg::Value;
 
-TEST_CASE("add value") {
+TEST_CASE("construction") {
+  Value x;
+  CHECK(x.data() == 0.0);
+  Value y{2.0};
+  CHECK(y.data() == 2.0);
+
+  Value z = y;
+  CHECK(z.data() == 2.0);
+  CHECK(y == z);
+  CHECK(Eqq(y, z));
+}
+
+TEST_CASE("operator") {
+  auto x = Value(2.0);
+  auto y = Value(3.0);
+  REQUIRE(x.data() == 2.0);
+  REQUIRE(y.data() == 3.0);
+
+  SUBCASE("add") {
+    auto z = x + y;
+
+    CHECK(z.data() == 5.0);
+  }
+
+  SUBCASE("mul") {
+    auto z = x * y;
+
+    CHECK(z.data() == 6.0);
+  }
+}
+
+TEST_CASE("backward") {
   auto x = Value(2.0);
   auto y = Value(3.0);
   auto z = x + y;
+  z.Backward();
 
-  CHECK(x.data() == 2.0);
-  CHECK(y.data() == 3.0);
-  CHECK(z.data() == 5.0);
+  CHECK(x.grad() == 1.0);
+  CHECK(y.grad() == 1.0);
 }
 
 // TEST_CASE("sanity check") {

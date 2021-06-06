@@ -11,6 +11,7 @@ enable_warnings(mg_options)
 enable_sanitizers(mg_options)
 
 find_package(fmt REQUIRED)
+find_package(absl REQUIRED)
 find_package(glog REQUIRED)
 find_package(doctest REQUIRED)
 
