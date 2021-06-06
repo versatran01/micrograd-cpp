@@ -12,15 +12,16 @@ enable_sanitizers(mg_options)
 
 find_package(fmt REQUIRED)
 find_package(glog REQUIRED)
-find_package(absl REQUIRED)
-find_package(ArrayFire REQUIRED)
-
-find_package(GTest REQUIRED)
-find_package(GMock REQUIRED)
-find_package(benchmark REQUIRED)
+find_package(doctest REQUIRED)
 
 option(BUILD_SHARED_LIBS "Build shared libraries" On)
 option(BUILD_TESTING "Build testing" On)
+
+cc_library(
+  NAME base
+  DEPS fmt::fmt glog::glog mg_options
+  INCDIRS ${CMAKE_SOURCE_DIR}
+  INTERFACE)
 
 enable_testing()
 add_subdirectory(mg)
