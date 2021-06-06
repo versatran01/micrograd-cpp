@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,24 +15,24 @@ class Value {
 
   // Constructors
   Value() = default;
-  Value(Data d) : data_{d} {}
+  Value(Data d) : data_{std::make_shared<Data>(d)} {}
 
   // Accesser
-  Data data() const { return data_; }
-  Data grad() const { return grad_; }
+  Data data() const { return *data_; }
+  Data grad() const { return *grad_; }
 
   // Operators
   Value operator-();
 
-  Value& operator+=(const Value& rhs);
-  Value& operator-=(const Value& rhs);
-  Value& operator*=(const Value& rhs);
-  Value& operator/=(const Value& rhs);
+  // Value& operator+=(const Value& rhs);
+  // Value& operator-=(const Value& rhs);
+  // Value& operator*=(const Value& rhs);
+  // Value& operator/=(const Value& rhs);
 
-  friend Value operator+(Value lhs, const Value& rhs) { return lhs += rhs; }
-  friend Value operator-(Value lhs, const Value& rhs) { return lhs -= rhs; }
-  friend Value operator*(Value lhs, const Value& rhs) { return lhs *= rhs; }
-  friend Value operator/(Value lhs, const Value& rhs) { return lhs /= rhs; }
+  friend Value operator+(const Value& lhs, const Value& rhs);
+  friend Value operator-(const Value& lhs, const Value& rhs);
+  friend Value operator*(const Value& lhs, const Value& rhs);
+  friend Value operator/(const Value& lhs, const Value& rhs);
 
   friend bool operator==(const Value& lhs, const Value& rhs) {
     return lhs.data() == rhs.data();
@@ -46,9 +47,9 @@ class Value {
 
   std::string Repr() const;
 
- private:
-  Data data_{};
-  Data grad_{};
+  using SharedData = std::shared_ptr<Data>;
+  SharedData data_{std::make_shared<Data>(0.0)};
+  SharedData grad_{std::make_shared<Data>(0.0)};
   GradFunc backward_{nullptr};
 };
 
