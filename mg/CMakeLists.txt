@@ -19,7 +19,8 @@ cc_library(
   NAME nn
   HDRS nn.h
   SRCS nn.cpp
-  DEPS mg_value)
+  DEPS mg_value
+  LINKOPTS absl::random_random)
 
 cc_test(
   NAME nn_test

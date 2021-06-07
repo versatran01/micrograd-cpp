@@ -33,12 +33,19 @@ TEST_CASE("Neuron") {
     CHECK(n.RawParams() == DataVec{2, 2, 2, 5});
   }
 
-  // auto n = Neuron{3, true};
-  // n.ConstInit(1, 1);
-  // auto x = ValueVec{1, 2, 3};
-  // auto y = n.Forward(x);
-  // REQUIRE(y.size() == 1);
-  // CHECK(y[0].Data() == 0.0);
+  SUBCASE("Forward Positive") {
+    n.ConstInit(1, 1);
+    ValueVec x = {1, 2, 3};
+    auto y = n.Forward(x);
+    CHECK(y.Data() == 7);
+  }
+
+  SUBCASE("Forward Negative") {
+    n.ConstInit(1, 1);
+    ValueVec x = {-1, -2, -3};
+    auto y = n.Forward(x);
+    CHECK(y.Data() == 0);
+  }
 }
 
 }  // namespace

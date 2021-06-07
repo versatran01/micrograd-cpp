@@ -13,10 +13,12 @@ class ModuleBase {
 
   void ZeroGrad();
 
-  virtual ValueVec Forward(const ValueVec& x) { return x; }
   virtual ValueVec Params() const { return {}; }
   virtual DataVec RawParams() const { return {}; }
   virtual std::string Repr() const { return "ModuleBase()"; }
+
+  virtual Value Forward(const ValueVec& x) = 0;
+  Value operator()(const ValueVec& x) { return Forward(x); }
 };
 
 class Module {
@@ -35,11 +37,11 @@ class Neuron final : public ModuleBase {
   Neuron(int n_in, bool nonlin = true);
 
   /// if random = true, random init, otherwise set it to vector
-  void RandomInit();
+  void UniformInit(double lb = 0.0, double ub = 1.0);
   void ConstInit(double w, double b = 1.0);
   void Init(const std::vector<double>& ws, double b);
 
-  ValueVec Forward(const ValueVec& x) override;
+  Value Forward(const ValueVec& x) override;
 
   ValueVec Params() const override;
   DataVec RawParams() const override;

@@ -1,9 +1,14 @@
 #include "mg/nn.h"
 
+#include <absl/random/random.h>
 #include <fmt/ranges.h>
 #include <glog/logging.h>
 
+#include <numeric>  // inner_product
+
 namespace mg {
+
+static absl::BitGen kBitGen;
 
 void ModuleBase::ZeroGrad() {
   for (auto& p : Params()) {
@@ -12,6 +17,16 @@ void ModuleBase::ZeroGrad() {
 }
 
 Neuron::Neuron(int n_in, bool nonlin) : nonlin_{nonlin} { ws_.resize(n_in); }
+
+void Neuron::UniformInit(double lb, double ub) {
+  DataVec ws;
+  ws.reserve(ws_.size());
+  for (size_t i = 0; i < ws.size(); ++i) {
+    ws[i] = absl::Uniform(kBitGen, lb, ub);
+  }
+  double b = absl::Uniform(kBitGen, lb, ub);
+  Init(ws, b);
+}
 
 void Neuron::ConstInit(double w, double b) {
   auto ws = std::vector<double>(ws_.size(), w);
@@ -26,9 +41,10 @@ void Neuron::Init(const std::vector<double>& ws, double b) {
   b_.Data_() = b;
 }
 
-ValueVec Neuron::Forward(const ValueVec& x) {
-  //
-  return x;
+Value Neuron::Forward(const ValueVec& x) {
+  CHECK_EQ(x.size(), ws_.size());
+  auto y = std::inner_product(ws_.begin(), ws_.end(), x.begin(), b_);
+  return nonlin_ ? y.ReLU() : y;
 }
 
 ValueVec Neuron::Params() const {
