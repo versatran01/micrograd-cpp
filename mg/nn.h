@@ -4,12 +4,18 @@
 
 namespace mg {
 
+using ValueVec = std::vector<Value>;
+using DataVec = std::vector<Value::DataType>;
+
 class ModuleBase {
  public:
   virtual ~ModuleBase() noexcept = default;
 
   void ZeroGrad();
-  virtual std::vector<Value> Parameters() const { return {}; }
+
+  virtual ValueVec Forward(const ValueVec& x) { return x; }
+  virtual ValueVec Params() const { return {}; }
+  virtual DataVec RawParams() const { return {}; }
   virtual std::string Repr() const { return "ModuleBase()"; }
 };
 
@@ -28,13 +34,18 @@ class Neuron final : public ModuleBase {
  public:
   Neuron(int n_in, bool nonlin = true);
 
-  void InitWeights();
-  Value Forward(const std::vector<Value>& x);
+  /// if random = true, random init, otherwise set it to vector
+  void RandomInit();
+  void ConstInit(double w, double b = 1.0);
+  void Init(const std::vector<double>& ws, double b);
 
-  std::vector<Value> Parameters() const override;
+  ValueVec Forward(const ValueVec& x) override;
+
+  ValueVec Params() const override;
+  DataVec RawParams() const override;
   std::string Repr() const override;
 
-  std::vector<Value> w_;
+  ValueVec ws_;
   Value b_;
   bool nonlin_{true};
 };

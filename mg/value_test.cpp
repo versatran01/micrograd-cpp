@@ -55,13 +55,13 @@ TEST_CASE("operator") {
 }
 
 TEST_CASE("backward") {
-  auto x = Value(2.0);
-  auto y = Value(-3.0);
+  auto x = Value{2.0};
+  auto y = Value{-3.0};
 
   SUBCASE("scope") {
     Value z;
     {
-      auto w = Value(4.0);
+      auto w = Value{4.0};
       z = x * w;
     }
     z.Backward();
@@ -102,7 +102,7 @@ TEST_CASE("backward") {
 }
 
 TEST_CASE("sanity check") {
-  auto x = Value(-4.0);
+  auto x = Value{-4.0};
   auto z = 2.0 * x + 2.0 + x;
   auto q = z.ReLU() + z * x;
   auto h = (z * z).ReLU();
@@ -136,8 +136,8 @@ TEST_CASE("sanity check") {
 }
 
 TEST_CASE("More ops") {
-  auto a = Value(-4.0f);
-  auto b = Value(2.0f);
+  auto a = Value{-4.0f};
+  auto b = Value{2.0f};
 
   SUBCASE("case 1") {
     auto c = a + b;

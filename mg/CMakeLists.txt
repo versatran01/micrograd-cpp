@@ -20,3 +20,9 @@ cc_library(
   HDRS nn.h
   SRCS nn.cpp
   DEPS mg_value)
+
+cc_test(
+  NAME nn_test
+  SRCS nn_test.cpp
+  DEPS mg_nn mg_test_main
+  OTHER)

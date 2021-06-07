@@ -5,7 +5,10 @@
 #include <glog/logging.h>
 
 namespace mg {
+
 namespace {
+
+// Build a dag, use pointer to (shared) data as identifier
 void BuildTopoImpl(const Value& v,
                    std::vector<Value>& topo,
                    absl::flat_hash_set<const Value::DataType*>& visited) {
@@ -17,6 +20,7 @@ void BuildTopoImpl(const Value& v,
     topo.push_back(v);
   }
 }
+
 }  // namespace
 
 Value operator-(const Value& rhs) { return rhs * -1.0; }
