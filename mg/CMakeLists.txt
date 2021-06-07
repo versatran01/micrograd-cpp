@@ -4,13 +4,19 @@ cc_library(
   DEPS doctest::doctest)
 
 cc_library(
-  NAME engine
-  HDRS engine.h
-  SRCS engine.cpp
+  NAME value
+  HDRS value.h
+  SRCS value.cpp
   DEPS mg_base absl::flat_hash_set)
 
 cc_test(
-  NAME engine_test
-  SRCS engine_test.cpp
-  DEPS mg_engine mg_test_main
+  NAME value_test
+  SRCS value_test.cpp
+  DEPS mg_value mg_test_main
   OTHER)
+
+cc_library(
+  NAME nn
+  HDRS nn.h
+  SRCS nn.cpp
+  DEPS mg_value)

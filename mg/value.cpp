@@ -1,4 +1,4 @@
-#include "mg/engine.h"
+#include "mg/value.h"
 
 #include <absl/container/flat_hash_set.h>
 #include <fmt/core.h>
@@ -24,6 +24,7 @@ Value operator-(const Value& rhs) { return rhs * -1.0; }
 Value operator+(const Value& lhs, const Value& rhs) {
   Value out{lhs.Data() + rhs.Data()};
 
+  // Need to capture by copy
   out.impl_->func = [out, lhs = Value(lhs), rhs = Value(rhs)]() {
     lhs.impl_->grad += out.Grad();
     rhs.impl_->grad += out.Grad();
@@ -83,6 +84,8 @@ void Value::Backward() {
     v.impl_->func();
   }
 }
+
+void Value::ZeroGrad() { impl_->grad = 0.0; }
 
 std::string Value::Repr() const {
   return fmt::format("Value(data={}, grad={})", Data(), Grad());

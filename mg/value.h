@@ -47,6 +47,7 @@ class Value {
   Value ReLU() const;
 
   void Backward();
+  void ZeroGrad();
 
   std::string Repr() const;
   friend std::ostream& operator<<(std::ostream& os, const Value& v);
