@@ -17,8 +17,8 @@ class ModuleBase {
   virtual DataVec RawParams() const { return {}; }
   virtual std::string Repr() const { return "ModuleBase()"; }
 
-  virtual Value Forward(const ValueVec& x) = 0;
-  Value operator()(const ValueVec& x) { return Forward(x); }
+  virtual ValueVec Forward(const ValueVec& x) = 0;
+  ValueVec operator()(const ValueVec& x) { return Forward(x); }
 };
 
 class Module {
@@ -34,15 +34,14 @@ class Module {
 
 class Neuron final : public ModuleBase {
  public:
-  Neuron(int n_in, bool nonlin = true);
+  Neuron(size_t n_in, bool nonlin = true);
 
   /// if random = true, random init, otherwise set it to vector
   void UniformInit(double lb = 0.0, double ub = 1.0);
   void ConstInit(double w, double b = 1.0);
   void Init(const std::vector<double>& ws, double b);
 
-  Value Forward(const ValueVec& x) override;
-
+  ValueVec Forward(const ValueVec& x) override;
   ValueVec Params() const override;
   DataVec RawParams() const override;
   std::string Repr() const override;
@@ -52,7 +51,20 @@ class Neuron final : public ModuleBase {
   bool nonlin_{true};
 };
 
-class Layer final : public ModuleBase {};
+class Layer final : public ModuleBase {
+ public:
+  Layer(size_t n_in, size_t n_out, bool nonlin);
+
+  ValueVec Forward(const ValueVec& x) override;
+  ValueVec Params() const override;
+  DataVec RawParams() const override;
+  std::string Repr() const override;
+
+ private:
+  size_t n_in_;
+  size_t n_out_;
+  std::vector<Neuron> neurons_;
+};
 
 class MLP final : public ModuleBase {};
 

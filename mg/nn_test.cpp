@@ -37,14 +37,16 @@ TEST_CASE("Neuron") {
     n.ConstInit(1, 1);
     ValueVec x = {1, 2, 3};
     auto y = n.Forward(x);
-    CHECK(y.Data() == 7);
+    REQUIRE(y.size() == 1);
+    CHECK(y[0].Data() == 7);
   }
 
   SUBCASE("Forward Negative") {
     n.ConstInit(1, 1);
     ValueVec x = {-1, -2, -3};
     auto y = n.Forward(x);
-    CHECK(y.Data() == 0);
+    REQUIRE(y.size() == 1);
+    CHECK(y[0].Data() == 0);
   }
 }
 
