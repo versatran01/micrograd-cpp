@@ -68,20 +68,20 @@ std::string Neuron::Repr() const {
   return fmt::format("Neuron(n_in={}, nonlin={})", ws_.size(), nonlin_);
 }
 
+// Layer
 Layer::Layer(size_t n_in, size_t n_out, bool nonlin)
-    : n_in_{n_in}, n_out_{n_out} {
-  neurons_.reserve(n_out);
+    : n_in{n_in}, n_out{n_out} {
+  neurons.reserve(n_out);
   for (size_t i = 0; i < n_out; ++i) {
-    neurons_.push_back(Neuron(n_in, nonlin));
+    neurons.push_back(Neuron(n_in, nonlin));
   }
 }
 
-// Layer
 ValueVec Layer::Forward(const ValueVec& x) {
-  CHECK_EQ(x.size(), n_in_);
+  CHECK_EQ(x.size(), n_in);
   ValueVec v;
-  v.reserve(n_out_);
-  for (auto& n : neurons_) {
+  v.reserve(n_out);
+  for (auto& n : neurons) {
     v.push_back(n(x)[0]);
   }
   return v;
@@ -89,8 +89,8 @@ ValueVec Layer::Forward(const ValueVec& x) {
 
 ValueVec Layer::Params() const {
   ValueVec v;
-  v.reserve(n_in_ * n_out_);
-  for (const auto& n : neurons_) {
+  v.reserve(n_in * n_out);
+  for (const auto& n : neurons) {
     auto ws = n.Params();
     v.insert(v.end(), ws.cbegin(), ws.cend());
   }
@@ -99,8 +99,8 @@ ValueVec Layer::Params() const {
 
 DataVec Layer::RawParams() const {
   DataVec v;
-  v.reserve(n_in_ * n_out_);
-  for (const auto& n : neurons_) {
+  v.reserve(n_in * n_out);
+  for (const auto& n : neurons) {
     auto ws = n.RawParams();
     v.insert(v.end(), ws.cbegin(), ws.cend());
   }
@@ -108,7 +108,47 @@ DataVec Layer::RawParams() const {
 }
 
 std::string Layer::Repr() const {
-  return fmt::format("Layer(n_in={}, n_out={})", n_in_, n_out_);
+  return fmt::format("Layer(n_in={}, n_out={})", n_in, n_out);
+}
+
+// MLP
+MLP::MLP(size_t n_in, const std::vector<size_t>& n_out)
+    : n_in{n_in}, n_out{n_out} {
+  for (size_t i = 0; i < n_out.size(); ++i) {
+    layers.push_back(
+        Layer{n_in, n_out[i], i == n_out.size() - 1 ? false : true});
+    n_in = n_out[i];
+  }
+}
+
+ValueVec MLP::Forward(const ValueVec& x) {
+  ValueVec z = x;  // make a copy
+  for (auto& l : layers) {
+    z = l(z);
+  }
+  return z;
+}
+
+ValueVec MLP::Params() const {
+  ValueVec v;
+  for (const auto& l : layers) {
+    auto ws = l.Params();
+    v.insert(v.end(), ws.cbegin(), ws.cend());
+  }
+  return v;
+}
+
+DataVec MLP::RawParams() const {
+  DataVec v;
+  for (const auto& l : layers) {
+    auto ws = l.RawParams();
+    v.insert(v.end(), ws.cbegin(), ws.cend());
+  }
+  return v;
+}
+
+std::string MLP::Repr() const {
+  return fmt::format("MLP(n_in={}, n_out={}", n_in, n_out);
 }
 
 }  // namespace mg

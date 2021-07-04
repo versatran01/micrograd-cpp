@@ -50,4 +50,45 @@ TEST_CASE("Neuron") {
   }
 }
 
+TEST_CASE("Layer") {
+  auto l = Layer{3, 2, true};
+
+  REQUIRE(l.neurons.size() == 2);
+
+  SUBCASE("Init") {
+    l.neurons[0].Init({2, 3, 4}, 5);
+    l.neurons[1].Init({2, 3, 4}, 5);
+    CHECK(l.RawParams() == DataVec{2, 3, 4, 5, 2, 3, 4, 5});
+  }
+
+  SUBCASE("Forward Positive") {
+    for (auto& n : l.neurons) {
+      n.ConstInit(1, 1);
+    }
+    ValueVec x = {1, 2, 3};
+    auto y = l.Forward(x);
+    REQUIRE(y.size() == 2);
+    CHECK(y[0].Data() == 7);
+    CHECK(y[1].Data() == 7);
+  }
+}
+
+TEST_CASE("MLP") {
+  auto m = MLP{3, {2, 1}};
+  REQUIRE(m.layers.size() == 2);
+
+  SUBCASE("Forward") {
+    for (auto& l : m.layers) {
+      for (auto& n : l.neurons) {
+        n.ConstInit(1, 1);
+      }
+    }
+
+    ValueVec x = {1, 2, 3};
+    auto y = m.Forward(x);
+    REQUIRE(y.size() == 1);
+    CHECK(y[0].Data() == 15);
+  }
+}
+
 }  // namespace

@@ -60,12 +60,23 @@ class Layer final : public ModuleBase {
   DataVec RawParams() const override;
   std::string Repr() const override;
 
- private:
-  size_t n_in_;
-  size_t n_out_;
-  std::vector<Neuron> neurons_;
+  size_t n_in;
+  size_t n_out;
+  std::vector<Neuron> neurons;
 };
 
-class MLP final : public ModuleBase {};
+class MLP final : public ModuleBase {
+ public:
+  MLP(size_t n_in, const std::vector<size_t>& n_out);
+
+  ValueVec Forward(const ValueVec& x) override;
+  ValueVec Params() const override;
+  DataVec RawParams() const override;
+  std::string Repr() const override;
+
+  size_t n_in;
+  std::vector<size_t> n_out;
+  std::vector<Layer> layers;
+};
 
 }  // namespace mg
